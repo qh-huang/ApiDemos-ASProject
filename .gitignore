@@ -1,3 +1,7 @@
+# qiao@2015.11.30
+.idea/
+*.iml
+
 # Built application files
 *.apk
 *.ap_
