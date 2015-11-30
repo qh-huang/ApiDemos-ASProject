@@ -53,13 +53,27 @@ public class ForegroundService extends Service {
         int.class, Notification.class};
     private static final Class[] mStopForegroundSignature = new Class[] {
         boolean.class};
-    
+
     private NotificationManager mNM;
+    private Method mSetForeground;
     private Method mStartForeground;
     private Method mStopForeground;
+    private Object[] mSetForegroundArgs = new Object[1];
     private Object[] mStartForegroundArgs = new Object[2];
     private Object[] mStopForegroundArgs = new Object[1];
-    
+
+    void invokeMethod(Method method, Object[] args) {
+        try {
+            method.invoke(this, args);
+        } catch (InvocationTargetException e) {
+            // Should not happen.
+            Log.w("ApiDemos", "Unable to invoke method", e);
+        } catch (IllegalAccessException e) {
+            // Should not happen.
+            Log.w("ApiDemos", "Unable to invoke method", e);
+        }
+    }
+
     /**
      * This is a wrapper around the new startForeground method, using the older
      * APIs if it is not available.
@@ -80,11 +94,11 @@ public class ForegroundService extends Service {
             }
             return;
         }
-        
+
         // Fall back on the old API.
-        setForeground(true);
-        mNM.notify(id, notification);
-    }
+        mSetForegroundArgs[0] = Boolean.TRUE;
+        invokeMethod(mSetForeground, mSetForegroundArgs);
+        mNM.notify(id, notification);    }
     
     /**
      * This is a wrapper around the new stopForeground method, using the older
@@ -105,11 +119,12 @@ public class ForegroundService extends Service {
             }
             return;
         }
-        
+
         // Fall back on the old API.  Note to cancel BEFORE changing the
         // foreground state, since we could be killed at that point.
         mNM.cancel(id);
-        setForeground(false);
+        mSetForegroundArgs[0] = Boolean.FALSE;
+        invokeMethod(mSetForeground, mSetForegroundArgs);
     }
     
     @Override
